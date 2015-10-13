@@ -6,6 +6,7 @@ var router = express.Router();
 
 var validKeys = [];
 var people = [];
+var messages = [];
 
 /* GET home page. */
 var statusController = function(req, res, next) {
@@ -52,14 +53,17 @@ router.post('/authkeys', function(req, res, next) {
   res.json(key);
 });
 
+var findPersonByKey = function(key) {
+  return _.find(people, function(e) {
+    return e.key == key;
+  });
+}
 
 router.post('/people', function(req, res, next) {
   var key = getAuthKey(req);
 
   // Look for an existing person
-  var person = _.find(people, function(e) {
-    return e.key == key;
-  });
+  var person = findPersonByKey(key);
 
   if (person === undefined) {
     var id = uuid.v4();
@@ -69,6 +73,42 @@ router.post('/people', function(req, res, next) {
     people.push(person);
   }
   res.json(person);
+});
+
+router.get('/messages', function(req, res, next) {
+  res.json(messages);
+});
+
+router.post('/messages', function(req, res, next) {
+  var key = getAuthKey(req);
+
+  console.log(req.body);
+
+  // Get person associated with key
+  var person = findPersonByKey(key);
+  if (person === undefined) {
+    throw Error("The supplied key is not associated with a person");
+  }
+
+  if (req.body === undefined) {
+    throw Error("Failed to read request body.");
+  }
+
+  if (req.body.content === undefined) {
+    throw Error("Request body must include 'content' property.");
+  }
+
+  // Get message content
+  var content = req.body.content;
+  var message = {
+    content: content,
+    author: person
+  };
+
+  // add message to messages array
+  messages.push(message);
+
+  res.json(message);
 });
 
 module.exports = router;
