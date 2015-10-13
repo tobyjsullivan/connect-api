@@ -4,9 +4,16 @@ var uuid = require('node-uuid');
 var router = express.Router();
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+var statusController = function(req, res, next) {
+  var currentStatus = { status: "OK" };
+
+  var statuses = [currentStatus];
+  res.json(statuses);
+}
+
+router.get('/', statusController);
+
+router.get('/statuses', statusController);
 
 router.post('/people', function(req, res, next) {
   var id = uuid.v4();
